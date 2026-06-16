@@ -150,8 +150,9 @@ Datum		pgfincore_drawer(PG_FUNCTION_ARGS);
 #define relpathpg(rel, forkName) \
         relpathbackend((rel)->rd_locator, (rel)->rd_backend, (forkname_to_number(text_to_cstring(forkName))))
 #else
+/* PG 18+: relpathbackend() returns RelPathStr; pstrdup .str to get a palloc'd char * */
 #define relpathpg(rel, forkName) \
-        relpathbackend((rel)->rd_locator, (rel)->rd_backend, (forkname_to_number(text_to_cstring(forkName)))).str
+        pstrdup(relpathbackend((rel)->rd_locator, (rel)->rd_backend, (forkname_to_number(text_to_cstring(forkName)))).str)
 #endif
 
 /*
@@ -458,9 +459,9 @@ pgfadvise_loader_file(char *filename,
 					  bool willneed, bool dontneed, VarBit *databit,
 					  pgfloaderStruct *pgfloader)
 {
-	bits8	*sp;
+	uint8	*sp;
 	int		bitlen;
-	bits8	x;
+	uint8	x;
 	int		i, k;
 
 	/*
@@ -698,8 +699,8 @@ pgfincore_file(char *filename, pgfincoreStruct *pgfncr)
 	int		flag_dirty=1;
 
 	int		len, bitlen;
-	bits8	*r;
-	bits8	x = 0;
+	uint8	*r;
+	uint8	x = 0;
 	register int64 pageIndex;
 
 
@@ -1059,8 +1060,8 @@ pgfincore_drawer(PG_FUNCTION_ARGS)
              *r;
 	int  len,i,k;
 	VarBit *databit;
-	bits8 *sp;
-	bits8 x;
+	uint8 *sp;
+	uint8 x;
 
 	if (PG_ARGISNULL(0))
 		elog(ERROR, "pgfincore_drawer: databit argument shouldn't be NULL");
